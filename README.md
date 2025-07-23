@@ -11,4 +11,19 @@ Once it finishes, it will show something like this:
 
 ![](example.png)
 
+
+# Package as GraalVM Native Image
+
+To package the application as a GraalVM Native Image, run: 
+
+```bash
+./gradlew nativeCompile
+```
+
+You can the execute the native image with:
+
+```bash
+./build/native/nativeCompile/weather-genai
+```
+
 Inspired by [Carrot Weather](https://www.meetcarrot.com/weather/).

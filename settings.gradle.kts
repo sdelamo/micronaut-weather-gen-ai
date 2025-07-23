@@ -1,4 +1,1 @@
-
-
-rootProject.name="carrot-weather-gen-ai"
-
+rootProject.name="weather-genai"
