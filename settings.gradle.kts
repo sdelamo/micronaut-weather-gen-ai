@@ -1,1 +1,1 @@
-rootProject.name="weather-genai"
+rootProject.name="weathergenai"

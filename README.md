@@ -23,7 +23,7 @@ To package the application as a GraalVM Native Image, run:
 You can the execute the native image with:
 
 ```bash
-./build/native/nativeCompile/weather-genai
+./build/native/nativeCompile/weathergenai
 ```
 
 Inspired by [Carrot Weather](https://www.meetcarrot.com/weather/).
