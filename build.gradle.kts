@@ -51,8 +51,8 @@ application {
     mainClass = "com.example.Application"
 }
 java {
-    sourceCompatibility = JavaVersion.toVersion("21")
-    targetCompatibility = JavaVersion.toVersion("21")
+    sourceCompatibility = JavaVersion.toVersion("24")
+    targetCompatibility = JavaVersion.toVersion("24")
 }
 
 
@@ -79,9 +79,16 @@ micronaut {
     }
 }
 
-
 tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
-    jdkVersion = "21"
+    jdkVersion = "24"
 }
-
+var graalvmVersion  = "24.0.1"
+// https://github.com/graalvm/container/pkgs/container/graalvm-community
+tasks.named<io.micronaut.gradle.docker.MicronautDockerfile>("dockerfile") {
+    baseImage.set("ghcr.io/graalvm/graalvm-community:$graalvmVersion")
+}
+// https://github.com/graalvm/container/pkgs/container/native-image-community
+tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
+    graalImage.set("ghcr.io/graalvm/graalvm-community:$graalvmVersion")
+}
 
