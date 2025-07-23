@@ -5,6 +5,7 @@ import com.example.views.ForecastView;
 import com.example.services.weather.model.Location;
 import com.example.services.weather.WeatherClient;
 import dev.langchain4j.community.model.oracle.oci.genai.OciGenAiChatModel;
+import dev.langchain4j.community.model.oracle.oci.genai.OciGenAiCohereChatModel;
 import dev.langchain4j.data.image.Image;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
@@ -12,7 +13,6 @@ import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.image.ImageModel;
-import dev.langchain4j.model.openai.OpenAiImageModel;
 import dev.langchain4j.model.output.Response;
 import io.micronaut.cache.annotation.CacheConfig;
 import io.micronaut.cache.annotation.Cacheable;
@@ -36,7 +36,7 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
                                  ImageModel imageModel,
                                  ImageGeneratorConfiguration imageGeneratorConfiguration) {
         this.weatherClient = weatherClient;
-        this.chatModel = chatModels.stream().filter(m -> m instanceof OciGenAiChatModel).findFirst().orElseThrow();
+        this.chatModel = chatModels.stream().filter(m -> m instanceof OciGenAiChatModel || m instanceof OciGenAiCohereChatModel).findFirst().orElseThrow();
         this.imageModel = imageModel;
         this.imageGeneratorConfiguration = imageGeneratorConfiguration;
     }
