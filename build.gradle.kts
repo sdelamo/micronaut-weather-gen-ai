@@ -51,8 +51,8 @@ application {
     mainClass = "com.example.Application"
 }
 java {
-    sourceCompatibility = JavaVersion.toVersion("24")
-    targetCompatibility = JavaVersion.toVersion("24")
+    sourceCompatibility = JavaVersion.toVersion("21")
+    targetCompatibility = JavaVersion.toVersion("21")
 }
 
 
@@ -80,9 +80,9 @@ micronaut {
 }
 
 tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
-    jdkVersion = "24"
+    jdkVersion = "21"
 }
-var graalvmVersion  = "24.0.1"
+var graalvmVersion  = "21.0.2"
 // https://github.com/graalvm/container/pkgs/container/graalvm-community
 tasks.named<io.micronaut.gradle.docker.MicronautDockerfile>("dockerfile") {
     baseImage.set("ghcr.io/graalvm/graalvm-community:$graalvmVersion")
