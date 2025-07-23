@@ -3,11 +3,13 @@ package com.example.controllers;
 import com.example.conf.UsOracleOffice;
 import com.example.services.ai.WeatherChatBot;
 import io.micronaut.core.util.StringUtils;
+import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.PathVariable;
 import io.micronaut.http.annotation.Produces;
+import io.micronaut.http.cookie.Cookie;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.views.View;
@@ -18,8 +20,8 @@ import java.util.Map;
 
 @Controller
 class UseOracleOfficeWeatherController {
-
-    private static final String REGEX = "austin|redwoodshores|morrisville|hillsboro|malvern|nashville|sanantonio|lehi|arlington|reston|seattle|irvine";
+    public static final String REGEX = "austin|redwoodshores|morrisville|hillsboro|malvern|nashville|sanantonio|lehi|arlington|reston|seattle|irvine";
+    public static final String COOKIE_NAME_ORACLE_OFFICE = "oracleoffice";
 
     private final Map<String, UsOracleOffice> offices;
     private final WeatherChatBot weatherChatBot;
@@ -33,9 +35,9 @@ class UseOracleOfficeWeatherController {
     @Produces(MediaType.TEXT_HTML)
     @Get("/weather/{name}")
     @View("index")
-    Map<String, Object> index(@PathVariable @Pattern(regexp = REGEX) String name) {
+    HttpResponse<Map<String, Object>> index(@PathVariable @Pattern(regexp = REGEX) String name) {
         UsOracleOffice usOracleOffice = offices.get(name);
-        return model(usOracleOffice);
+        return HttpResponse.ok(model(usOracleOffice)).cookie(Cookie.of(COOKIE_NAME_ORACLE_OFFICE, name).path("/"));
     }
 
     @ExecuteOn(TaskExecutors.BLOCKING)
