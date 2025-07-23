@@ -27,9 +27,12 @@ dependencies {
     annotationProcessor("io.micronaut:micronaut-http-validation")
 
     // Langchain4j
-    annotationProcessor("io.micronaut.langchain4j:micronaut-langchain4j-processor:1.1.0")
-    implementation("io.micronaut.langchain4j:micronaut-langchain4j-openai:1.1.0")
-    //implementation("io.micronaut.langchain4j:micronaut-langchain4j-oci-genai:1.1.0")
+    annotationProcessor(platform("io.micronaut.langchain4j:micronaut-langchain4j-bom:1.1.0"))
+    implementation(platform("io.micronaut.langchain4j:micronaut-langchain4j-bom:1.1.0"))
+    annotationProcessor("io.micronaut.langchain4j:micronaut-langchain4j-processor")
+    implementation("io.micronaut.langchain4j:micronaut-langchain4j-openai")
+    implementation("dev.langchain4j:langchain4j-community-oci-genai")
+    implementation("io.micronaut.langchain4j:micronaut-langchain4j-oci-genai")
 
     // HTTP Client
     implementation("io.micronaut:micronaut-http-client")
