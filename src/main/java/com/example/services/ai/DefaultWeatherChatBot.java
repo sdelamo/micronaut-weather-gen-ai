@@ -47,7 +47,7 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
 
     private String cityName(Location location) {
         String str = String.format("Give the city name given the latitude %s and longitude %s . The answer should be only the city name. Don't add any extra comments.", location.latitude(), location.longitude());
-        List<ChatMessage> messages = List.of(UserMessage.from(str));
+        List<ChatMessage> messages = List.of(SYSTEM_MSG, UserMessage.from(str));
         ChatResponse chatResponse = chatModel.chat(messages);
         return chatResponse.aiMessage().text();
     }
