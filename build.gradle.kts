@@ -34,6 +34,9 @@ dependencies {
     // HTTP Client
     implementation("io.micronaut:micronaut-http-client")
 
+    // Endpoints
+    implementation("io.micronaut:micronaut-management")
+
     // Views
     implementation("io.micronaut.views:micronaut-views-thymeleaf")
 
