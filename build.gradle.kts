@@ -37,6 +37,9 @@ dependencies {
     // HTTP Client
     implementation("io.micronaut:micronaut-http-client")
 
+    // Endpoints
+    implementation("io.micronaut:micronaut-management")
+
     // Views
     implementation("io.micronaut.views:micronaut-views-thymeleaf")
 
@@ -79,9 +82,16 @@ micronaut {
     }
 }
 
-
 tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
     jdkVersion = "21"
 }
-
+var graalvmVersion  = "21.0.2"
+// https://github.com/graalvm/container/pkgs/container/graalvm-community
+tasks.named<io.micronaut.gradle.docker.MicronautDockerfile>("dockerfile") {
+    baseImage.set("ghcr.io/graalvm/graalvm-community:$graalvmVersion")
+}
+// https://github.com/graalvm/container/pkgs/container/native-image-community
+tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
+    graalImage.set("ghcr.io/graalvm/graalvm-community:$graalvmVersion")
+}
 
