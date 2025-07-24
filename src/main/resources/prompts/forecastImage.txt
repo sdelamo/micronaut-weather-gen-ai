@@ -6,6 +6,9 @@ The image will be displayed together with this commentary:
 Thus, it would be good if the image and the commentary are related to each other.
 
 Only focus on today's weather.
-The image should contain the temperature and also an image based on the weather conditions (for example, sun, rain, clouds, lightning, etc).
+The image should not contain the temperature.
+The image should not contain any text or any diagram.
+The image should be based on the weather conditions (for example, sun, rain, clouds, lightning, etc).
+Include the shape Oracle's offices building in %s in the image.
 Use a blue background.
 This is the forecast: %s
