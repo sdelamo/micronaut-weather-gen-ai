@@ -86,7 +86,8 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
     @Cacheable(cacheNames = "forecastImageUrl")
     public String forecastImageUrl(@NonNull Location location) {
         String forecast = weatherForecast(location);
-        return generateImageUrl(forecast);
+        CardBody card = forecastCard(location);
+        return generateImageUrl(forecast, card);
     }
 
     @Cacheable(cacheNames = "forecast")
@@ -101,11 +102,11 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
         return chatResponse.aiMessage().text();
     }
 
-    public String generateImageUrl(String forecast) {
+    public String generateImageUrl(String forecast, CardBody card) {
         if (imageModel == null) {
             return imageGeneratorConfiguration.getDefaultWeatherImageUrl();
         }
-        Response<Image> image = imageModel.generate(imagePrompt +  forecast);
+        Response<Image> image = imageModel.generate(String.format(imagePrompt, card.text(), forecast));
         return image.content().url().toString();
     }
 

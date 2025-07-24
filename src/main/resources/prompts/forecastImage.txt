@@ -1,6 +1,11 @@
 Generate an image for the following weather forecast.
+The image will be displayed together with this commentary:
+
+%s
+
+Thus, it would be good if the image and the commentary are related to each other.
+
 Only focus on today's weather.
-The image should contain the temperature and also an image
-based on the weather conditions (for example, sun, rain, clouds, lighting, etc).
+The image should contain the temperature and also an image based on the weather conditions (for example, sun, rain, clouds, lightning, etc).
 Use a blue background.
-This is the forecast:
+This is the forecast: %s
