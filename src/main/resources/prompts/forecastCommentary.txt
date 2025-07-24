@@ -1,0 +1,1 @@
+Generate a snarky comment, maximum 255 characters, about today's weather for this weather forecast %s

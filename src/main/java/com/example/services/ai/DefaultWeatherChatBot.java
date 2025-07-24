@@ -16,18 +16,23 @@ import dev.langchain4j.model.image.ImageModel;
 import dev.langchain4j.model.output.Response;
 import io.micronaut.cache.annotation.CacheConfig;
 import io.micronaut.cache.annotation.Cacheable;
+import io.micronaut.context.exceptions.ConfigurationException;
 import io.micronaut.core.annotation.NonNull;
-import io.micronaut.core.annotation.Nullable;
+import io.micronaut.core.io.ResourceLoader;
 import jakarta.inject.Singleton;
-
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.function.Supplier;
 
 @CacheConfig("forecasts")
 @Singleton
 public class DefaultWeatherChatBot implements WeatherChatBot {
-    private static final SystemMessage SYSTEM_MSG = SystemMessage.from("""
-            You are a crazy-powerful weather chatbot that delivers hilariously twisted forecasts.
-            The snarky character makes the app fun and engaging.""");
+    private final SystemMessage systemMessage;
+    private final String cityPrompt;
+    private final String commentaryPrompt;
+    private final String imagePrompt;
     private final WeatherClient weatherClient;
     private final ChatModel chatModel;
     private final ImageModel imageModel;
@@ -35,11 +40,37 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
     public DefaultWeatherChatBot(WeatherClient weatherClient,
                                  List<ChatModel> chatModels,
                                  ImageModel imageModel,
-                                 ImageGeneratorConfiguration imageGeneratorConfiguration) {
+                                 ImageGeneratorConfiguration imageGeneratorConfiguration,
+                                 ResourceLoader resourceLoader) {
         this.weatherClient = weatherClient;
         this.chatModel = chatModels.stream().filter(m -> m instanceof OciGenAiChatModel || m instanceof OciGenAiCohereChatModel).findFirst().orElseThrow();
         this.imageModel = imageModel;
         this.imageGeneratorConfiguration = imageGeneratorConfiguration;
+        systemMessage = SystemMessage.from(loadPrompt(resourceLoader,
+                "classpath:prompts/system.txt",
+                () -> new ConfigurationException("Could not find system prompt")));
+        imagePrompt = loadPrompt(resourceLoader,
+                "classpath:prompts/forecastImage.txt",
+                () -> new ConfigurationException("Could not find image prompt"));
+        commentaryPrompt = loadPrompt(resourceLoader,
+                "classpath:prompts/forecastCommentary.txt",
+                () -> new ConfigurationException("Could not find commentary prompt"));
+        cityPrompt = loadPrompt(resourceLoader,
+                "classpath:prompts/coordinatesCity.txt",
+                () -> new ConfigurationException("Could not find city prompt"));
+    }
+
+    private String loadPrompt(ResourceLoader resourceLoader, String classpath, Supplier<? extends Throwable> exceptionSupplier) {
+        try {
+            try {
+                InputStream inputStream = resourceLoader.getResourceAsStream(classpath).orElseThrow(exceptionSupplier);
+                return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+                } catch (IOException e) {
+                throw exceptionSupplier.get();
+            }
+        } catch (Throwable throwable) {
+            throw new ConfigurationException("error while loading prompt");
+        }
     }
 
     @Override
@@ -64,8 +95,8 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
     }
 
     private String cityName(Location location) {
-        String str = String.format("Give the city name given the latitude %s and longitude %s . The answer should be only the city name. Don't add any extra comments.", location.latitude(), location.longitude());
-        List<ChatMessage> messages = List.of(SYSTEM_MSG, UserMessage.from(str));
+        String str = String.format(cityPrompt, location.latitude(), location.longitude());
+        List<ChatMessage> messages = List.of(systemMessage, UserMessage.from(str));
         ChatResponse chatResponse = chatModel.chat(messages);
         return chatResponse.aiMessage().text();
     }
@@ -74,7 +105,7 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
         if (imageModel == null) {
             return imageGeneratorConfiguration.getDefaultWeatherImageUrl();
         }
-        Response<Image> image = imageModel.generate("Generate an image for the following weather forecast. Only focus on today's weather. The image should contain the temperature and also an image for the weather conditions (for example, sun, rain clouds, lighting, etc). Use a blue background. This is the forecast: " +  forecast);
+        Response<Image> image = imageModel.generate(imagePrompt +  forecast);
         return image.content().url().toString();
     }
 
@@ -84,9 +115,9 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
         return chatResponse.aiMessage().text();
     }
 
-    private static List<ChatMessage> messages(String forecast) {
-        return List.of(SYSTEM_MSG, UserMessage.from(
-                String.format("Generate a snarky comment, maximum 255 characters, about today's weather for this weather forecast %s", forecast)
+    private List<ChatMessage> messages(String forecast) {
+        return List.of(systemMessage, UserMessage.from(
+                String.format(commentaryPrompt, forecast)
         ));
     }
 }
