@@ -20,7 +20,7 @@ import jakarta.inject.Singleton;
 
 import java.util.List;
 
-@CacheConfig("headlines")
+@CacheConfig("forecasts")
 @Singleton
 public class DefaultWeatherChatBot implements WeatherChatBot {
     private static final SystemMessage SYSTEM_MSG = SystemMessage.from("""
@@ -42,7 +42,7 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
 
     @Override
     @NonNull
-    @Cacheable
+    @Cacheable(cacheNames = "forecastCard")
     public CardBody forecastCard(@NonNull Location location) {
         String forecast = weatherForecast(location);
         return new CardBody(cityName(location), forecastComment(forecast));
@@ -50,13 +50,13 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
 
     @Override
     @NonNull
-    @Cacheable
+    @Cacheable(cacheNames = "forecastImageUrl")
     public String forecastImageUrl(@NonNull Location location) {
         String forecast = weatherForecast(location);
         return generateImageUrl(forecast);
     }
 
-    @Cacheable
+    @Cacheable(cacheNames = "forecast")
     public String weatherForecast(Location location) {
         return weatherClient.formattedForecast(location);
     }
