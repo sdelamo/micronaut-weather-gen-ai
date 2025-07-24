@@ -1,0 +1,32 @@
+service: weathergenai
+image: axqonzxzrddy/weathergenai
+ssh:
+  user: ubuntu
+servers:
+  web:
+    - 130.162.191.179
+proxy:
+  ssl: false
+  host: 130.162.191.179
+  healthcheck:
+    path: /health
+  app_port: 8080
+registry:
+  server: ocir.uk-london-1.oci.oraclecloud.com
+  username:
+    - OCI_USERNAME
+  password:
+    - OCI_AUTH_TOKEN
+builder:
+# JAR
+#  context: build/docker/main
+#  dockerfile: build/docker/main/Dockerfile
+# Native
+  context: build/docker/native-main
+  dockerfile: build/docker/native-main/DockerfileNative
+  arch: arm64
+env:
+  clear:
+    MICRONAUT_ENVIRONMENTS: oraclecloud
+  secret:
+    - LANGCHAIN4J_OPEN_AI_API_KEY
