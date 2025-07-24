@@ -1,0 +1,6 @@
+Generate an image for the following weather forecast.
+Only focus on today's weather.
+The image should contain the temperature and also an image
+based on the weather conditions (for example, sun, rain, clouds, lighting, etc).
+Use a blue background.
+This is the forecast:

@@ -6,6 +6,8 @@ For each location, it fetches the:
 - It asks GenAI to provide you with a snarky comment about the weather forecast.
 - It asks GenAI to generate an image based on the weather forecast.
 
+Prompts are in txt files in `src/main/resources/prompts`. 
+
 As these requests take time, the application loads them asynchronously with HTMX[(https://htmx.org). 
 
 The weather forecast, images and comments are cache for 30 minutes with [Micronaut Cache](https://micronaut-projects.github.io/micronaut-cache/latest/guide/) and Caffeine.
@@ -43,7 +45,7 @@ To package the application as a GraalVM Native Image, run:
 You can the execute the native image with:
 
 ```bash
-./build/native/nativeCompile/weathergenai
+build/native/nativeCompile/weathergenai
 ```
 
 Inspired by [Carrot Weather](https://www.meetcarrot.com/weather/).
