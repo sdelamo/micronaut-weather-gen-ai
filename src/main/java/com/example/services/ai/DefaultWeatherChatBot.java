@@ -1,7 +1,7 @@
 package com.example.services.ai;
 
 import com.example.conf.ImageGeneratorConfiguration;
-import com.example.views.ForecastView;
+import com.example.views.CardBody;
 import com.example.services.weather.model.Location;
 import com.example.services.weather.WeatherClient;
 import dev.langchain4j.community.model.oracle.oci.genai.OciGenAiChatModel;
@@ -16,6 +16,7 @@ import dev.langchain4j.model.image.ImageModel;
 import dev.langchain4j.model.output.Response;
 import io.micronaut.cache.annotation.CacheConfig;
 import io.micronaut.cache.annotation.Cacheable;
+import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
 import jakarta.inject.Singleton;
 
@@ -41,10 +42,25 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
         this.imageGeneratorConfiguration = imageGeneratorConfiguration;
     }
 
+    @Override
+    @NonNull
     @Cacheable
-    public ForecastView forecast(Location location) {
-        String forecast = weatherClient.formattedForecast(location);
-        return new ForecastView(cityName(location), forecastComment(forecast), generateImageUrl(forecast));
+    public CardBody forecastCard(@NonNull Location location) {
+        String forecast = weatherForecast(location);
+        return new CardBody(cityName(location), forecastComment(forecast));
+    }
+
+    @Override
+    @NonNull
+    @Cacheable
+    public String forecastImageUrl(@NonNull Location location) {
+        String forecast = weatherForecast(location);
+        return generateImageUrl(forecast);
+    }
+
+    @Cacheable
+    public String weatherForecast(Location location) {
+        return weatherClient.formattedForecast(location);
     }
 
     private String cityName(Location location) {
