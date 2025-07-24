@@ -29,14 +29,34 @@
     </div>
 </nav>
     <div class="container pt-2">
-        <div id="forecastContainer"
-             th:attr="hx-get=@{'/weather/' + ${name} + '/forecast'}"
-             hx-trigger="load"
-             hx-target="#forecastContainer"
-             hx-swap="outerHTML">
-            <div class="d-flex justify-content-center pt-2" id="loadingSpinner">
-                <div class="spinner-grow text-danger" role="status">
-                    <span class="visually-hidden">Loading...</span>
+        <div class="card mx-auto" style="width: 30rem;">
+            <div id="forecastCardBody" class="card-body"
+                 th:attr="hx-get=@{'/weather/' + ${name} + '/forecast/card'}"
+                 hx-trigger="load"
+                 hx-target="#forecastCardBody"
+                 hx-swap="outerHTML">
+                <h4 class="card-title placeholder-glow">
+                    <span class="placeholder col-6"></span>
+                </h4>
+                <p class="card-text fs-4  placeholder-glow">
+                    <span class="placeholder col-7"></span>
+                    <span class="placeholder col-4"></span>
+                    <span class="placeholder col-4"></span>
+                    <span class="placeholder col-6"></span>
+                    <span class="placeholder col-8"></span>
+                </p>
+            </div>
+
+            <div id="cardImgTop" class="card-img-top placeholder-glow"
+                 style="height: 300px; background-color: rgb(134, 142, 150);"
+                 th:attr="hx-get=@{'/weather/' + ${name} + '/forecast/image'}"
+                 hx-trigger="load"
+                 hx-target="#cardImgTop"
+                 hx-swap="outerHTML">
+                <div class="d-flex justify-content-center align-items-center h-100" id="loadingSpinner">
+                    <div class="spinner-grow text-light" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
                 </div>
             </div>
         </div>

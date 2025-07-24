@@ -42,12 +42,23 @@ class UseOracleOfficeWeatherController {
 
     @ExecuteOn(TaskExecutors.BLOCKING)
     @Produces(MediaType.TEXT_HTML)
-    @View("card")
-    @Get("/weather/{name}/forecast")
-    Map<String, Object> forecast(@PathVariable @Pattern(regexp = REGEX) String name) {
+    @View("cardBody")
+    @Get("/weather/{name}/forecast/card")
+    Map<String, Object> forecastCard(@PathVariable @Pattern(regexp = REGEX) String name) {
         UsOracleOffice usOracleOffice = offices.get(name);
         Map<String, Object> result = new HashMap<>(model(usOracleOffice));
-        result.put("forecast", weatherChatBot.forecast(usOracleOffice.location()));
+        result.put("forecast", weatherChatBot.forecastCard(usOracleOffice.location()));
+        return result;
+    }
+
+    @ExecuteOn(TaskExecutors.BLOCKING)
+    @Produces(MediaType.TEXT_HTML)
+    @View("cardImage")
+    @Get("/weather/{name}/forecast/image")
+    Map<String, Object> forecastImageUrl(@PathVariable @Pattern(regexp = REGEX) String name) {
+        UsOracleOffice usOracleOffice = offices.get(name);
+        Map<String, Object> result = new HashMap<>(model(usOracleOffice));
+        result.put("imageUrl", weatherChatBot.forecastImageUrl(usOracleOffice.location()));
         return result;
     }
 
