@@ -1,6 +1,7 @@
 package com.example.services.ai;
 
 import com.example.conf.ImageGeneratorConfiguration;
+import com.example.conf.UsOracleOffice;
 import com.example.views.CardBody;
 import com.example.services.weather.model.Location;
 import com.example.services.weather.WeatherClient;
@@ -106,7 +107,7 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
         if (imageModel == null) {
             return imageGeneratorConfiguration.getDefaultWeatherImageUrl();
         }
-        Response<Image> image = imageModel.generate(String.format(imagePrompt, card.text(), forecast));
+        Response<Image> image = imageModel.generate(String.format(imagePrompt, card.text(), card.title(), forecast));
         return image.content().url().toString();
     }
 
