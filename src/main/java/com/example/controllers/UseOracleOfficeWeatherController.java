@@ -22,6 +22,11 @@ import java.util.Map;
 class UseOracleOfficeWeatherController {
     public static final String REGEX = "austin|redwoodshores|morrisville|hillsboro|malvern|nashville|sanantonio|lehi|arlington|reston|seattle|irvine";
     public static final String COOKIE_NAME_ORACLE_OFFICE = "oracleoffice";
+    private static final String KEY_OFFICES = "offices";
+    private static final String KEY_CITY = "city";
+    private static final String KEY_NAME = "name";
+    private static final String KEY_IMAGE_URL = "imageUrl";
+    private static final String KEY_FORECAST = "forecast";
 
     private final Map<String, UsOracleOffice> offices;
     private final WeatherChatBot weatherChatBot;
@@ -47,7 +52,7 @@ class UseOracleOfficeWeatherController {
     Map<String, Object> forecastCard(@PathVariable @Pattern(regexp = REGEX) String name) {
         UsOracleOffice usOracleOffice = offices.get(name);
         Map<String, Object> result = new HashMap<>(model(usOracleOffice));
-        result.put("forecast", weatherChatBot.forecastCard(usOracleOffice.location()));
+        result.put(KEY_FORECAST, weatherChatBot.forecastCard(usOracleOffice.location()));
         return result;
     }
 
@@ -58,19 +63,19 @@ class UseOracleOfficeWeatherController {
     Map<String, Object> forecastImageUrl(@PathVariable @Pattern(regexp = REGEX) String name) {
         UsOracleOffice usOracleOffice = offices.get(name);
         Map<String, Object> result = new HashMap<>(model(usOracleOffice));
-        result.put("imageUrl", weatherChatBot.forecastImageUrl(usOracleOffice.location()));
+        result.put(KEY_IMAGE_URL, weatherChatBot.forecastImageUrl(usOracleOffice.location()));
         return result;
     }
 
     private Map<String, Object> model(UsOracleOffice usOracleOffice) {
         return Map.of(
-                "offices", offices.values().stream().sorted(new Comparator<UsOracleOffice>() {
+                KEY_OFFICES, offices.values().stream().sorted(new Comparator<UsOracleOffice>() {
                     @Override
                     public int compare(UsOracleOffice o1, UsOracleOffice o2) {
                         return o1.getName().compareTo(o2.getName());
                     }
                 }),
-                "city", StringUtils.capitalize(usOracleOffice.getName()),
-                "name", usOracleOffice.getName());
+                KEY_CITY, StringUtils.capitalize(usOracleOffice.getName()),
+                KEY_NAME, usOracleOffice.getName());
     }
 }
