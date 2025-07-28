@@ -22,6 +22,14 @@ The application is [GraalVM Native Image](https://www.graalvm.org/latest/referen
 
 # Run
 
+Run redis locally for cache: 
+
+```
+docker run --name my-redis -p 6379:6379 -d redis:latest
+```
+
+
+
 Define `LANGCHAIN4J_OPEN_AI_API_KEY` environment variable with an OpenAI API key. Then, you can run the application, use the following command:
 
 ```bash

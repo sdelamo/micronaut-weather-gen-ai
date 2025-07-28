@@ -12,7 +12,8 @@ repositories {
 
 dependencies {
     // Cache
-    implementation("io.micronaut.cache:micronaut-cache-caffeine")
+    //implementation("io.micronaut.cache:micronaut-cache-caffeine")
+    implementation("io.micronaut.redis:micronaut-redis-lettuce")
 
     // Micronaut Validation
     annotationProcessor("io.micronaut.validation:micronaut-validation-processor")
@@ -27,9 +28,13 @@ dependencies {
 
     // Langchain4j
     annotationProcessor(platform("io.micronaut.langchain4j:micronaut-langchain4j-bom:1.1.0"))
-    implementation(platform("io.micronaut.langchain4j:micronaut-langchain4j-bom:1.1.0"))
+
+
+    annotationProcessor(platform("io.micronaut.langchain4j:micronaut-langchain4j-bom:1.1.0"))
     annotationProcessor("io.micronaut.langchain4j:micronaut-langchain4j-processor")
+    implementation(platform("io.micronaut.langchain4j:micronaut-langchain4j-bom:1.1.0"))
     implementation("io.micronaut.langchain4j:micronaut-langchain4j-openai")
+    //implementation("io.micronaut.langchain4j:micronaut-langchain4j-ollama")
     implementation("dev.langchain4j:langchain4j-community-oci-genai")
     implementation("io.micronaut.langchain4j:micronaut-langchain4j-oci-genai")
 
