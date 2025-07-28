@@ -77,13 +77,16 @@ micronaut {
 tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
     jdkVersion = "21"
 }
-var graalvmVersion  = "21.0.2"
+var graalvmVersion  = "21"
+var graalvmCeVersion  = "21.0.2"
 // https://github.com/graalvm/container/pkgs/container/graalvm-community
 tasks.named<io.micronaut.gradle.docker.MicronautDockerfile>("dockerfile") {
-    baseImage.set("ghcr.io/graalvm/graalvm-community:$graalvmVersion")
+    //baseImage.set("ghcr.io/graalvm/graalvm-community:$graalvmCeVersion")
+    baseImage.set("container-registry.oracle.com/graalvm/native-image:$graalvmVersion")
 }
 // https://github.com/graalvm/container/pkgs/container/native-image-community
 tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
-    graalImage.set("ghcr.io/graalvm/graalvm-community:$graalvmVersion")
+    //graalImage.set("ghcr.io/graalvm/graalvm-community:$graalvmCeVersion")
+    baseImage.set("container-registry.oracle.com/graalvm/native-image:$graalvmVersion")
 }
 
