@@ -12,7 +12,8 @@ repositories {
 
 dependencies {
     // Cache
-    implementation("io.micronaut.cache:micronaut-cache-caffeine")
+    //implementation("io.micronaut.cache:micronaut-cache-caffeine")
+    implementation("io.micronaut.redis:micronaut-redis-lettuce")
 
     // Micronaut Validation
     annotationProcessor("io.micronaut.validation:micronaut-validation-processor")
@@ -26,9 +27,12 @@ dependencies {
     annotationProcessor("io.micronaut:micronaut-http-validation")
 
     // Langchain4j
-    annotationProcessor("io.micronaut.langchain4j:micronaut-langchain4j-processor:1.1.0")
-    implementation("io.micronaut.langchain4j:micronaut-langchain4j-openai:1.1.0")
-    //implementation("io.micronaut.langchain4j:micronaut-langchain4j-oci-genai:1.1.0")
+    annotationProcessor(platform("io.micronaut.langchain4j:micronaut-langchain4j-bom:1.1.0"))
+    annotationProcessor("io.micronaut.langchain4j:micronaut-langchain4j-processor")
+    implementation(platform("io.micronaut.langchain4j:micronaut-langchain4j-bom:1.1.0"))
+    //implementation("io.micronaut.langchain4j:micronaut-langchain4j-ollama")
+    implementation("io.micronaut.langchain4j:micronaut-langchain4j-openai")
+    //implementation("io.micronaut.langchain4j:micronaut-langchain4j-oci-genai")
 
     // HTTP Client
     implementation("io.micronaut:micronaut-http-client")

@@ -10,6 +10,7 @@ Create a weather forecast image with the following specifications:
 - Weather condition icon/illustration that matches today's forecast exactly
 - Subtle location indicator if space permits
 - Maintain visual consistency with this commentary: "%s"
+- Include the shape Oracle's offices building in %s in the image.
 
 **Weather Condition Guidelines:**
 - Sunny: Bright sun with rays, clear sky, warm yellow/orange tones

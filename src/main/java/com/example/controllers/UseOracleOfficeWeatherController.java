@@ -1,7 +1,9 @@
 package com.example.controllers;
 
 import com.example.conf.UsOracleOffice;
-import com.example.services.ai.WeatherChatBot;
+import com.example.services.ai.WeatherCommentGenerator;
+import com.example.services.ai.WeatherImageGeneration;
+import com.example.views.CardBody;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
@@ -14,7 +16,6 @@ import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.views.View;
 import jakarta.validation.constraints.Pattern;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,12 +30,15 @@ class UseOracleOfficeWeatherController {
     private static final String KEY_FORECAST = "forecast";
 
     private final Map<String, UsOracleOffice> offices;
-    private final WeatherChatBot weatherChatBot;
+    private final WeatherImageGeneration weatherImageGeneration;
+    private final WeatherCommentGenerator weatherCommentGenerator;
 
     UseOracleOfficeWeatherController(Map<String, UsOracleOffice> offices,
-                                     WeatherChatBot weatherChatBot) {
+                                     WeatherImageGeneration weatherImageGeneration,
+                                     WeatherCommentGenerator weatherCommentGenerator) {
         this.offices = offices;
-        this.weatherChatBot = weatherChatBot;
+        this.weatherImageGeneration = weatherImageGeneration;
+        this.weatherCommentGenerator = weatherCommentGenerator;
     }
 
     @Produces(MediaType.TEXT_HTML)
@@ -52,7 +56,8 @@ class UseOracleOfficeWeatherController {
     Map<String, Object> forecastCard(@PathVariable @Pattern(regexp = REGEX) String name) {
         UsOracleOffice usOracleOffice = offices.get(name);
         Map<String, Object> result = new HashMap<>(model(usOracleOffice));
-        result.put(KEY_FORECAST, weatherChatBot.forecastCard(usOracleOffice.location()));
+        CardBody card = weatherCommentGenerator.generate(usOracleOffice.location());
+        result.put(KEY_FORECAST, card);
         return result;
     }
 
@@ -63,18 +68,13 @@ class UseOracleOfficeWeatherController {
     Map<String, Object> forecastImageUrl(@PathVariable @Pattern(regexp = REGEX) String name) {
         UsOracleOffice usOracleOffice = offices.get(name);
         Map<String, Object> result = new HashMap<>(model(usOracleOffice));
-        result.put(KEY_IMAGE_URL, weatherChatBot.forecastImageUrl(usOracleOffice.location()));
+        result.put(KEY_IMAGE_URL, weatherImageGeneration.forecastImageBase64DataUrl(usOracleOffice.location()));
         return result;
     }
 
     private Map<String, Object> model(UsOracleOffice usOracleOffice) {
         return Map.of(
-                KEY_OFFICES, offices.values().stream().sorted(new Comparator<UsOracleOffice>() {
-                    @Override
-                    public int compare(UsOracleOffice o1, UsOracleOffice o2) {
-                        return o1.getName().compareTo(o2.getName());
-                    }
-                }),
+                KEY_OFFICES, offices.values().stream().sorted((o1, o2) -> o1.getName().compareTo(o2.getName())),
                 KEY_CITY, StringUtils.capitalize(usOracleOffice.getName()),
                 KEY_NAME, usOracleOffice.getName());
     }

@@ -6,6 +6,8 @@ For each location, it fetches the:
 - It asks GenAI to provide you with a snarky comment about the weather forecast.
 - It asks GenAI to generate an image based on the weather forecast.
 
+![Weather GenAI Architecture](weathergenai.png)
+
 Prompts are in txt files in `src/main/resources/prompts`. 
 
 As these requests take time, the application loads them asynchronously with HTMX[(https://htmx.org). 
@@ -21,6 +23,12 @@ To consume the https://api.weather.gov it uses a declarative [Micronaut HTTP cli
 The application is [GraalVM Native Image](https://www.graalvm.org/latest/reference-manual/native-image/) compatible. You can package it as a native image and run it.
 
 # Run
+
+Run redis locally for cache: 
+
+```
+docker run --name my-redis -p 6379:6379 -d redis:latest
+```
 
 Define `LANGCHAIN4J_OPEN_AI_API_KEY` environment variable with an OpenAI API key. Then, you can run the application, use the following command:
 
