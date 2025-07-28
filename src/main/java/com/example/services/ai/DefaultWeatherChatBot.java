@@ -2,7 +2,6 @@ package com.example.services.ai;
 
 import com.example.conf.ImageGeneratorConfiguration;
 import com.example.conf.UsOracleOffice;
-import com.example.utils.ImageUtils;
 import com.example.views.CardBody;
 import com.example.services.weather.model.Location;
 import com.example.services.weather.WeatherClient;
@@ -120,14 +119,8 @@ public class DefaultWeatherChatBot implements WeatherChatBot, ImageGeneration {
         if (genAiImage != null) {
             return genAiImage.url().toString();
         }
-        try {
-            if (StringUtils.isNotEmpty(imageGeneratorConfiguration.getDefaultWeatherImageUrl())) {
-                return ImageUtils.toBase64DataUrl(imageGeneratorConfiguration.getDefaultWeatherImageUrl(), MediaType.IMAGE_JPEG);
-            }
-        } catch (Exception e) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("error generating bas64 image data", e);
-            }
+        if (StringUtils.isNotEmpty(imageGeneratorConfiguration.getDefaultWeatherImageUrl())) {
+            return imageGeneratorConfiguration.getDefaultWeatherImageUrl();
         }
         return null;
     }
