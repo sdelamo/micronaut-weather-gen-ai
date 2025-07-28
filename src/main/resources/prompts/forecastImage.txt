@@ -1,37 +1,14 @@
-Create a weather forecast image with the following specifications:
+Generate an image for the following weather forecast.
+The image will be displayed together with this commentary:
 
-**Visual Style & Layout:**
-- Clean, modern weather app aesthetic with a blue gradient background (#4A90E2 to #87CEEB)
-- Centered composition with clear visual hierarchy
-- Professional but approachable design suitable for mobile/web display
+%s
 
-**Required Elements:**
-- Large, prominent temperature display (use bold, white text, minimum 48px equivalent)
-- Weather condition icon/illustration that matches today's forecast exactly
-- Subtle location indicator if space permits
-- Maintain visual consistency with this commentary: "%s"
-- Include the shape Oracle's offices building in %s in the image.
+Thus, it would be good if the image and the commentary are related to each other.
 
-**Weather Condition Guidelines:**
-- Sunny: Bright sun with rays, clear sky, warm yellow/orange tones
-- Partly Cloudy: Mix of sun and fluffy white clouds
-- Cloudy: Gray/white clouds covering most of sky
-- Rainy: Rain drops, dark clouds, puddles or umbrellas
-- Stormy: Lightning bolts, dark storm clouds, dramatic atmosphere
-- Snowy: Snowflakes, white/light blue palette, winter elements
-- Foggy: Misty/hazy overlay, reduced visibility effect
-
-**Technical Requirements:**
-- Focus ONLY on today's weather conditions from this forecast: %s
-- Temperature should be the most prominent text element
-- Use weather-appropriate color accents while maintaining blue background base
-- Ensure text is highly readable with proper contrast
-- Image should be optimized for web display (clear at both mobile and desktop sizes)
-- Avoid cluttering - prioritize clarity and immediate visual understanding
-
-**Tone Alignment:**
-- The image should complement the snarky/witty commentary style
-- Professional enough for a weather app, engaging enough to match personality
-- Balance informative weather data with visual appeal
-
-Generate a single, cohesive weather image that users would expect to see in a premium weather application.
+Only focus on today's weather.
+The image should not contain the temperature.
+The image should not contain any text or any diagram.
+The image should be based on the weather conditions (for example, sun, rain, clouds, lightning, etc).
+Include the shape Oracle's offices building in %s in the image.
+Use a blue background.
+This is the forecast: %s
