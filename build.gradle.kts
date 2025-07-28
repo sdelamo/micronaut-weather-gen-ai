@@ -27,6 +27,7 @@ dependencies {
 
     // Langchain4j
     annotationProcessor("io.micronaut.langchain4j:micronaut-langchain4j-processor:1.1.0")
+    //implementation("io.micronaut.langchain4j:micronaut-langchain4j-ollama:1.1.0")
     implementation("io.micronaut.langchain4j:micronaut-langchain4j-openai:1.1.0")
     //implementation("io.micronaut.langchain4j:micronaut-langchain4j-oci-genai:1.1.0")
 

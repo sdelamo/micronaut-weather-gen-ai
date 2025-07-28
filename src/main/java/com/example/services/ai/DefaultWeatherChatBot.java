@@ -21,17 +21,13 @@ import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.io.ResourceLoader;
 import io.micronaut.core.util.StringUtils;
-import io.micronaut.http.MediaType;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -51,7 +47,8 @@ public class DefaultWeatherChatBot implements WeatherChatBot, ImageGeneration {
     private final ImageGeneratorConfiguration imageGeneratorConfiguration;
     public DefaultWeatherChatBot(WeatherClient weatherClient,
                                  ChatModel chatModel,
-                                 @Nullable ImageModel imageModel, List<UsOracleOffice> offices,
+                                 @Nullable ImageModel imageModel,
+                                 List<UsOracleOffice> offices,
                                  ImageGeneratorConfiguration imageGeneratorConfiguration,
                                  ResourceLoader resourceLoader) {
         this.weatherClient = weatherClient;
