@@ -2,6 +2,7 @@ package com.example.services.ai;
 
 import com.example.conf.ImageGeneratorConfiguration;
 import com.example.conf.UsOracleOffice;
+import com.example.utils.ImageUtils;
 import com.example.views.CardBody;
 import com.example.services.weather.model.Location;
 import com.example.services.weather.WeatherClient;
@@ -9,6 +10,7 @@ import dev.langchain4j.data.image.Image;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.exception.LangChain4jException;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.image.ImageModel;
@@ -19,16 +21,26 @@ import io.micronaut.context.exceptions.ConfigurationException;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.io.ResourceLoader;
+import io.micronaut.core.util.StringUtils;
+import io.micronaut.http.MediaType;
 import jakarta.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @CacheConfig("forecasts")
 @Singleton
-public class DefaultWeatherChatBot implements WeatherChatBot {
+public class DefaultWeatherChatBot implements WeatherChatBot, ImageGeneration {
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultWeatherChatBot.class);
     private final SystemMessage systemMessage;
     private final String cityPrompt;
     private final String commentaryPrompt;
@@ -36,15 +48,17 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
     private final WeatherClient weatherClient;
     private final ChatModel chatModel;
     private final ImageModel imageModel;
+    private final List<UsOracleOffice> offices;
     private final ImageGeneratorConfiguration imageGeneratorConfiguration;
     public DefaultWeatherChatBot(WeatherClient weatherClient,
                                  ChatModel chatModel,
-                                 @Nullable ImageModel imageModel,
+                                 @Nullable ImageModel imageModel, List<UsOracleOffice> offices,
                                  ImageGeneratorConfiguration imageGeneratorConfiguration,
                                  ResourceLoader resourceLoader) {
         this.weatherClient = weatherClient;
         this.chatModel = chatModel;
         this.imageModel = imageModel;
+        this.offices = offices;
         this.imageGeneratorConfiguration = imageGeneratorConfiguration;
         systemMessage = SystemMessage.from(loadPrompt(resourceLoader,
                 "classpath:prompts/system.txt",
@@ -60,34 +74,20 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
                 () -> new ConfigurationException("Could not find city prompt"));
     }
 
-    private String loadPrompt(ResourceLoader resourceLoader, String classpath, Supplier<? extends Throwable> exceptionSupplier) {
-        try {
-            try {
-                InputStream inputStream = resourceLoader.getResourceAsStream(classpath).orElseThrow(exceptionSupplier);
-                return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                } catch (IOException e) {
-                throw exceptionSupplier.get();
-            }
-        } catch (Throwable throwable) {
-            throw new ConfigurationException("error while loading prompt");
-        }
-    }
-
     @Override
     @NonNull
     @Cacheable(cacheNames = "forecastCard")
     public CardBody forecastCard(@NonNull Location location) {
         String forecast = weatherForecast(location);
-        return new CardBody(cityName(location), forecastComment(forecast));
-    }
-
-    @Override
-    @NonNull
-    @Cacheable(cacheNames = "forecastImageUrl")
-    public String forecastImageUrl(@NonNull Location location) {
-        String forecast = weatherForecast(location);
-        CardBody card = forecastCard(location);
-        return generateImageUrl(forecast, card);
+        String comment = "";
+        try {
+            comment = forecastComment(forecast);
+        } catch (LangChain4jException e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error("could not generate forecast comment", e);
+            }
+        }
+        return new CardBody(cityName(location), comment);
     }
 
     @Cacheable(cacheNames = "forecast")
@@ -95,22 +95,73 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
         return weatherClient.formattedForecast(location);
     }
 
-    private String cityName(Location location) {
-        String str = String.format(cityPrompt, location.latitude(), location.longitude());
-        List<ChatMessage> messages = List.of(systemMessage, UserMessage.from(str));
-        ChatResponse chatResponse = chatModel.chat(messages);
-        return chatResponse.aiMessage().text();
+    @Cacheable(cacheNames = "forecastGenAiImage")
+    public GenAiImage forecastGenAiImage(@NonNull Location location) throws LangChain4jException {
+        String forecast = weatherForecast(location);
+        CardBody card = forecastCard(location);
+        try {
+            Optional<Image> imageOptional = generateImageUrl(forecast, card);
+            if (imageOptional.isPresent()) {
+                Image image = imageOptional.get();
+                return new GenAiImage(image.url(), image.mimeType());
+            }
+        } catch (LangChain4jException e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error("error generating bas64 image data", e);
+            }
+        }
+        return null;
     }
 
-    public String generateImageUrl(String forecast, CardBody card) {
+    @Override
+    @Nullable
+    public String forecastImageBase64DataUrl(@NonNull Location location) {
+        GenAiImage genAiImage = forecastGenAiImage(location);
+        if (genAiImage != null) {
+            return genAiImage.url().toString();
+        }
+        try {
+            if (StringUtils.isNotEmpty(imageGeneratorConfiguration.getDefaultWeatherImageUrl())) {
+                return ImageUtils.toBase64DataUrl(imageGeneratorConfiguration.getDefaultWeatherImageUrl(), MediaType.IMAGE_JPEG);
+            }
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error("error generating bas64 image data", e);
+            }
+        }
+        return null;
+    }
+
+    @NonNull
+    private String cityName(Location location) {
+        return offices.stream()
+                .filter(office -> office.location().equals(location))
+                .map(UsOracleOffice::getCity)
+                .findFirst()
+                .orElseGet(() -> {
+                    String str = String.format(cityPrompt, location.latitude(), location.longitude());
+                    List<ChatMessage> messages = List.of(systemMessage, UserMessage.from(str));
+                    try {
+                        ChatResponse chatResponse = chatModel.chat(messages);
+                        return chatResponse.aiMessage().text();
+                    } catch (LangChain4jException e) {
+                        if (LOG.isErrorEnabled()) {
+                            LOG.error("error generating image", e);
+                        }
+                    }
+                    return "";
+                });
+    }
+
+    public Optional<Image> generateImageUrl(String forecast, CardBody card) throws LangChain4jException {
         if (imageModel == null) {
-            return imageGeneratorConfiguration.getDefaultWeatherImageUrl();
+            return Optional.empty();
         }
         Response<Image> image = imageModel.generate(String.format(imagePrompt, card.text(), card.title(), forecast));
-        return image.content().url().toString();
+        return Optional.of(image.content());
     }
 
-    public String forecastComment(String forecast) {
+    public String forecastComment(String forecast) throws LangChain4jException {
         List<ChatMessage> messages = messages(forecast);
         ChatResponse chatResponse = chatModel.chat(messages);
         return chatResponse.aiMessage().text();
@@ -120,5 +171,18 @@ public class DefaultWeatherChatBot implements WeatherChatBot {
         return List.of(systemMessage, UserMessage.from(
                 String.format(commentaryPrompt, forecast)
         ));
+    }
+
+    private static String loadPrompt(ResourceLoader resourceLoader, String classpath, Supplier<? extends Throwable> exceptionSupplier) {
+        try {
+            try {
+                InputStream inputStream = resourceLoader.getResourceAsStream(classpath).orElseThrow(exceptionSupplier);
+                return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                throw exceptionSupplier.get();
+            }
+        } catch (Throwable throwable) {
+            throw new ConfigurationException("error while loading prompt");
+        }
     }
 }

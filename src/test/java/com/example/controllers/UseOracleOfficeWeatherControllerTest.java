@@ -1,6 +1,7 @@
 package com.example.controllers;
 
 import com.example.services.ai.DefaultWeatherChatBot;
+import com.example.services.ai.ImageGeneration;
 import com.example.services.ai.WeatherChatBot;
 import com.example.services.weather.model.Location;
 import com.example.views.CardBody;
@@ -32,6 +33,9 @@ class UseOracleOfficeWeatherControllerTest {
     @Inject
     WeatherChatBot weatherChatBot;
 
+    @Inject
+    ImageGeneration imageGeneration;
+
     @Test
     void weatherForecastCard(@Client("/") HttpClient httpClient) {
         when(weatherChatBot.forecastCard(new Location(austinLatitude, austinLongitude))).thenReturn(CARD);
@@ -42,7 +46,7 @@ class UseOracleOfficeWeatherControllerTest {
 
     @Test
     void weatherForecastCardImage(@Client("/") HttpClient httpClient) {
-        when(weatherChatBot.forecastImageUrl(new Location(austinLatitude, austinLongitude))).thenReturn(IMAGE_URL);
+        when(imageGeneration.forecastImageBase64DataUrl(new Location(austinLatitude, austinLongitude))).thenReturn(IMAGE_URL);
         BlockingHttpClient client = httpClient.toBlocking();
         var request = HttpRequest.GET("/weather/austin/forecast/image").accept(MediaType.TEXT_HTML);
         assertDoesNotThrow(() -> client.exchange(request));
@@ -58,5 +62,10 @@ class UseOracleOfficeWeatherControllerTest {
     @MockBean(DefaultWeatherChatBot.class)
     WeatherChatBot weatherChatBot() {
         return mock(WeatherChatBot.class);
+    }
+
+    @MockBean(DefaultWeatherChatBot.class)
+    ImageGeneration imageGeneration() {
+        return mock(ImageGeneration.class);
     }
 }

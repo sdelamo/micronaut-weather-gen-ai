@@ -1,6 +1,7 @@
 package com.example.controllers;
 
 import com.example.conf.UsOracleOffice;
+import com.example.services.ai.ImageGeneration;
 import com.example.services.ai.WeatherChatBot;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpResponse;
@@ -30,11 +31,14 @@ class UseOracleOfficeWeatherController {
 
     private final Map<String, UsOracleOffice> offices;
     private final WeatherChatBot weatherChatBot;
+    private final ImageGeneration imageGeneration;
 
     UseOracleOfficeWeatherController(Map<String, UsOracleOffice> offices,
-                                     WeatherChatBot weatherChatBot) {
+                                     WeatherChatBot weatherChatBot,
+                                     ImageGeneration imageGeneration) {
         this.offices = offices;
         this.weatherChatBot = weatherChatBot;
+        this.imageGeneration = imageGeneration;
     }
 
     @Produces(MediaType.TEXT_HTML)
@@ -63,7 +67,7 @@ class UseOracleOfficeWeatherController {
     Map<String, Object> forecastImageUrl(@PathVariable @Pattern(regexp = REGEX) String name) {
         UsOracleOffice usOracleOffice = offices.get(name);
         Map<String, Object> result = new HashMap<>(model(usOracleOffice));
-        result.put(KEY_IMAGE_URL, weatherChatBot.forecastImageUrl(usOracleOffice.location()));
+        result.put(KEY_IMAGE_URL, imageGeneration.forecastImageBase64DataUrl(usOracleOffice.location()));
         return result;
     }
 
