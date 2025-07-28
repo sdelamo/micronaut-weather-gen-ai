@@ -6,7 +6,7 @@ For each location, it fetches the:
 - It asks GenAI to provide you with a snarky comment about the weather forecast.
 - It asks GenAI to generate an image based on the weather forecast.
 
-![Weather GenAI Architecture](weathergenai.png)
+![Weather GenAI Architecture](docs/weathergenai.png)
 
 Prompts are in txt files in `src/main/resources/prompts`. 
 
@@ -39,7 +39,7 @@ Define `LANGCHAIN4J_OPEN_AI_API_KEY` environment variable with an OpenAI API key
 Once you run it, the application attempts to load a forecast and generate text and image based on the weather data.
 Once it finishes, it will show something like this: 
 
-![](example.png)
+![](docs/example.png)
 
 
 # Package as GraalVM Native Image
