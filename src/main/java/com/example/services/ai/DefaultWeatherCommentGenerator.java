@@ -3,6 +3,8 @@ package com.example.services.ai;
 import com.example.conf.UsOracleOffice;
 import com.example.services.weather.model.Location;
 import com.example.views.CardBody;
+import dev.langchain4j.community.model.oracle.oci.genai.OciGenAiChatModel;
+import dev.langchain4j.community.model.oracle.oci.genai.OciGenAiCohereChatModel;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
@@ -32,11 +34,11 @@ public class DefaultWeatherCommentGenerator implements WeatherCommentGenerator {
 
     public DefaultWeatherCommentGenerator(List<UsOracleOffice> offices,
                                    ResourceLoader resourceLoader,
-                                   ChatModel chatModel,
+                                   List<ChatModel> chatModels,
                                    WeatherForecastGenerator weatherForecastGenerator) {
         this.offices = offices;
         this.weatherForecastGenerator = weatherForecastGenerator;
-        this.chatModel = chatModel;
+        this.chatModel = chatModels.stream().filter(m -> m instanceof OciGenAiChatModel || m instanceof OciGenAiCohereChatModel).findFirst().orElseThrow();
         systemMessage = SystemMessage.from(loadPrompt(resourceLoader,
                 "classpath:prompts/system.txt",
                 () -> new ConfigurationException("Could not find system prompt")));
