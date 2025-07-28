@@ -1,10 +1,9 @@
 package com.example.services.ai;
 
-import com.example.views.CardBody;
 import com.example.services.weather.model.Location;
 import io.micronaut.core.annotation.NonNull;
 
-public interface WeatherChatBot {
+public interface WeatherForecastGenerator {
     @NonNull
-    CardBody forecastCard(@NonNull Location location);
+    String generate(@NonNull Location location);
 }

@@ -1,8 +1,9 @@
 package com.example.controllers;
 
-import com.example.services.ai.DefaultWeatherChatBot;
-import com.example.services.ai.ImageGeneration;
-import com.example.services.ai.WeatherChatBot;
+import com.example.services.ai.DefaultWeatherCommentGenerator;
+import com.example.services.ai.DefaultWeatherImageGeneration;
+import com.example.services.ai.WeatherCommentGenerator;
+import com.example.services.ai.WeatherImageGeneration;
 import com.example.services.weather.model.Location;
 import com.example.views.CardBody;
 import io.micronaut.http.HttpRequest;
@@ -31,14 +32,14 @@ class UseOracleOfficeWeatherControllerTest {
             "https://oaidalleapiprodscus.blob.core.windows.net/private/org-DnFzHMeMDIUON73ywCGSinMt/user-H9ynsd1daAU72qPFEmA3pLHh/img-Z4ktfg6QWXLtMMM38TxHDNdQ.png?st=2025-07-23T08%3A02%3A59Z&se=2025-07-23T10%3A02%3A59Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=cc612491-d948-4d2e-9821-2683df3719f5&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-07-23T03%3A02%3A25Z&ske=2025-07-24T03%3A02%3A25Z&sks=b&skv=2024-08-04&sig=EOp5y222H0Dxg4lD45xU2/cOaK7OwKK%2Bi8jaiUI95fw%3D";
 
     @Inject
-    WeatherChatBot weatherChatBot;
+    WeatherCommentGenerator weatherCommentGenerator;
 
     @Inject
-    ImageGeneration imageGeneration;
+    WeatherImageGeneration weatherImageGeneration;
 
     @Test
     void weatherForecastCard(@Client("/") HttpClient httpClient) {
-        when(weatherChatBot.forecastCard(new Location(austinLatitude, austinLongitude))).thenReturn(CARD);
+        when(weatherCommentGenerator.generate(new Location(austinLatitude, austinLongitude))).thenReturn(CARD);
         BlockingHttpClient client = httpClient.toBlocking();
         var request = HttpRequest.GET("/weather/austin/forecast/card").accept(MediaType.TEXT_HTML);
         assertDoesNotThrow(() -> client.exchange(request));
@@ -46,7 +47,7 @@ class UseOracleOfficeWeatherControllerTest {
 
     @Test
     void weatherForecastCardImage(@Client("/") HttpClient httpClient) {
-        when(imageGeneration.forecastImageBase64DataUrl(new Location(austinLatitude, austinLongitude))).thenReturn(IMAGE_URL);
+        when(weatherImageGeneration.forecastImageBase64DataUrl(new Location(austinLatitude, austinLongitude))).thenReturn(IMAGE_URL);
         BlockingHttpClient client = httpClient.toBlocking();
         var request = HttpRequest.GET("/weather/austin/forecast/image").accept(MediaType.TEXT_HTML);
         assertDoesNotThrow(() -> client.exchange(request));
@@ -59,13 +60,13 @@ class UseOracleOfficeWeatherControllerTest {
         assertDoesNotThrow(() -> client.exchange(request));
     }
 
-    @MockBean(DefaultWeatherChatBot.class)
-    WeatherChatBot weatherChatBot() {
-        return mock(WeatherChatBot.class);
+    @MockBean(DefaultWeatherImageGeneration.class)
+    WeatherImageGeneration weatherImageGeneration() {
+        return mock(WeatherImageGeneration.class);
     }
 
-    @MockBean(DefaultWeatherChatBot.class)
-    ImageGeneration imageGeneration() {
-        return mock(ImageGeneration.class);
+    @MockBean(DefaultWeatherCommentGenerator.class)
+    WeatherCommentGenerator weatherCommentGenerator() {
+        return mock(WeatherCommentGenerator.class);
     }
 }
