@@ -12,7 +12,8 @@ repositories {
 
 dependencies {
     // Cache
-    implementation("io.micronaut.cache:micronaut-cache-caffeine")
+    //implementation("io.micronaut.cache:micronaut-cache-caffeine")
+    implementation("io.micronaut.redis:micronaut-redis-lettuce")
 
     // Micronaut Validation
     annotationProcessor("io.micronaut.validation:micronaut-validation-processor")

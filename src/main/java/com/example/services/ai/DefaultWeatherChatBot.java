@@ -2,6 +2,7 @@ package com.example.services.ai;
 
 import com.example.conf.ImageGeneratorConfiguration;
 import com.example.conf.UsOracleOffice;
+import com.example.utils.ImageUtils;
 import com.example.views.CardBody;
 import com.example.services.weather.model.Location;
 import com.example.services.weather.WeatherClient;
@@ -14,13 +15,13 @@ import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.image.ImageModel;
 import dev.langchain4j.model.output.Response;
-import io.micronaut.cache.annotation.CacheConfig;
 import io.micronaut.cache.annotation.Cacheable;
 import io.micronaut.context.exceptions.ConfigurationException;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.io.ResourceLoader;
 import io.micronaut.core.util.StringUtils;
+import io.micronaut.http.MediaType;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-@CacheConfig("forecasts")
 @Singleton
 public class DefaultWeatherChatBot implements WeatherChatBot, ImageGeneration {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultWeatherChatBot.class);
@@ -45,6 +45,7 @@ public class DefaultWeatherChatBot implements WeatherChatBot, ImageGeneration {
     private final ImageModel imageModel;
     private final List<UsOracleOffice> offices;
     private final ImageGeneratorConfiguration imageGeneratorConfiguration;
+
     public DefaultWeatherChatBot(WeatherClient weatherClient,
                                  ChatModel chatModel,
                                  @Nullable ImageModel imageModel,
@@ -72,18 +73,25 @@ public class DefaultWeatherChatBot implements WeatherChatBot, ImageGeneration {
 
     @Override
     @NonNull
-    @Cacheable(cacheNames = "forecastCard")
     public CardBody forecastCard(@NonNull Location location) {
+        String comment = forecastComment(location);
+        if (comment == null) {
+            comment = "";
+        }
+        return new CardBody(cityName(location), comment);
+    }
+
+    @Cacheable(cacheNames = "forecastcomment")
+    public String forecastComment(@NonNull Location location) {
         String forecast = weatherForecast(location);
-        String comment = "";
         try {
-            comment = forecastComment(forecast);
+            return forecastComment(forecast);
         } catch (LangChain4jException e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error("could not generate forecast comment", e);
             }
         }
-        return new CardBody(cityName(location), comment);
+        return null;
     }
 
     @Cacheable(cacheNames = "forecast")
@@ -91,7 +99,41 @@ public class DefaultWeatherChatBot implements WeatherChatBot, ImageGeneration {
         return weatherClient.formattedForecast(location);
     }
 
-    @Cacheable(cacheNames = "forecastGenAiImage")
+    @Cacheable(cacheNames = "forecastimage")
+    @Nullable
+    public String forecastGenAiImageBase64DataUrl(@NonNull Location location) throws LangChain4jException {
+        GenAiImage genAiImage = forecastGenAiImage(location);
+        if (genAiImage != null) {
+            try {
+                return ImageUtils.toBase64DataUrl(genAiImage.url().toString(), genAiImage.mimeType());
+            } catch (Exception e) {
+                if (LOG.isErrorEnabled()) {
+                    LOG.error("error generating bas64 of default image", e);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    @Nullable
+    public String forecastImageBase64DataUrl(@NonNull Location location) {
+        String base64DataUrl =  forecastGenAiImageBase64DataUrl(location);
+        if (StringUtils.isNotEmpty(base64DataUrl)) {
+            return base64DataUrl;
+        }
+        if (StringUtils.isNotEmpty(imageGeneratorConfiguration.getDefaultWeatherImageUrl())) {
+            try {
+                return ImageUtils.toBase64DataUrl(imageGeneratorConfiguration.getDefaultWeatherImageUrl(), imageGeneratorConfiguration.getDefaultWeatherImageMimeType());
+            } catch (Exception e) {
+                if (LOG.isErrorEnabled()) {
+                    LOG.error("error generating bas64 of default image", e);
+                }
+            }
+        }
+        return null;
+    }
+
     public GenAiImage forecastGenAiImage(@NonNull Location location) throws LangChain4jException {
         String forecast = weatherForecast(location);
         CardBody card = forecastCard(location);
@@ -99,7 +141,12 @@ public class DefaultWeatherChatBot implements WeatherChatBot, ImageGeneration {
             Optional<Image> imageOptional = generateImageUrl(forecast, card);
             if (imageOptional.isPresent()) {
                 Image image = imageOptional.get();
-                return new GenAiImage(image.url(), image.mimeType());
+
+                String mimeType = image.mimeType();
+                if (StringUtils.isNotEmpty(mimeType) && mimeType.contains(MediaType.IMAGE_PNG)) {
+                    mimeType = MediaType.IMAGE_PNG;
+                }
+                return new GenAiImage(image.url(), mimeType);
             }
         } catch (LangChain4jException e) {
             if (LOG.isErrorEnabled()) {
@@ -109,21 +156,9 @@ public class DefaultWeatherChatBot implements WeatherChatBot, ImageGeneration {
         return null;
     }
 
-    @Override
-    @Nullable
-    public String forecastImageBase64DataUrl(@NonNull Location location) {
-        GenAiImage genAiImage = forecastGenAiImage(location);
-        if (genAiImage != null) {
-            return genAiImage.url().toString();
-        }
-        if (StringUtils.isNotEmpty(imageGeneratorConfiguration.getDefaultWeatherImageUrl())) {
-            return imageGeneratorConfiguration.getDefaultWeatherImageUrl();
-        }
-        return null;
-    }
-
+    @Cacheable(cacheNames = "forecastcity")
     @NonNull
-    private String cityName(Location location) {
+    public String cityName(Location location) {
         return offices.stream()
                 .filter(office -> office.location().equals(location))
                 .map(UsOracleOffice::getCity)
