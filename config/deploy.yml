@@ -30,3 +30,10 @@ env:
     MICRONAUT_ENVIRONMENTS: oraclecloud
   secret:
     - LANGCHAIN4J_OPEN_AI_API_KEY
+accessories:
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    roles:
+      - web
