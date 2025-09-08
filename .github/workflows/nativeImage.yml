@@ -1,0 +1,28 @@
+name: GraalVM Native Image builds
+on: [push, pull_request]
+jobs:
+  build:
+    name: Generate Native Image on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
+
+      - name: Build native Image
+        run: |
+          ./gradlew nativeCompile
+      
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: micronaut-mcp-tool-weather-${{ matrix.os }}
+          path: build/native/nativeCompile/micronaut-mcp-tool-weather
